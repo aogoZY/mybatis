@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.aogo.dao.IUserDao">
+    <!--    配置查询所有操作-->
+    <select id="queryAll" resultType="cn.aogo.domain.User">
+        select * from user
+    </select>
+
+    <!--    插入数据-->
+    <insert id="insertUser" parameterType="cn.aogo.domain.User">
+ insert  into  user(userName,birthday,gender,address) value (#{userName},#{birthday},#{gender},#{address})
+    </insert>
+
+    <!--    更新数据-->
+    <insert id="updateUser" parameterType="cn.aogo.domain.User">
+            update user set userName =#{userName},birthday =#{birthday},gender =#{gender},address =#{address} where id =#{id}
+    </insert>
+
+    <!--    删除数据-->
+    <delete id="deleteUser" parameterType="Integer">
+            delete from user where id = #{id}
+    </delete>
+
+    <!--    根据名字模糊查询-->
+    <select id="findByName" parameterType="String" resultType="cn.aogo.domain.User">
+        select  * from user where userName like #{userName}
+    </select>
+
+    <!--    根据vo查询-->
+    <select id="queryByVo" parameterType="cn.aogo.domain.QueryVo" resultType="cn.aogo.domain.User">
+   select * from user where userName like #{user.userName}
+    </select>
+
+    <!--    根据条件查询 if标签-->
+    <select id="findByCondition" parameterType="cn.aogo.domain.User" resultType="cn.aogo.domain.User">
+        select * from user where 1=1
+        <if test="userName!=null">
+            and userName = #{userName}
+        </if>
+    </select>
+
+    <!--    根据条件查询 where标签-->
+    <select id="findByWhereCondition" parameterType="cn.aogo.domain.User" resultType="cn.aogo.domain.User">
+        select * from user
+        <where>
+            <if test="userName!=null">
+                and userName =#{userName}
+            </if>
+        </where>
+    </select>
+
+
+    <!--    foreach用于遍历集合，属性：-->
+
+    <!--    - collection：代表要遍历的集合元素-->
+    <!--    - open：代表语句的开始部分-->
+    <!--    - close：代表结束部分-->
+    <!--    - item：代表遍历集合的每个元素，生成的变量名-->
+    <!--    - sperator：代表分隔符-->
+
+    <!--    根据条件查询 foreach标签-->
+    <select id="findByForeachCondition" parameterType="cn.aogo.domain.QueryVo" resultType="cn.aogo.domain.User">
+        select * from user
+        <where>
+            <if test="ids!=null and ids.size()>0">
+                <foreach collection="ids" open="and id in (" close=")" item="id" separator=",">
+                    #{id}
+
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <!--    查询所有用户信息及其关联的账号信息 一对多 用户没有账户信息也需要摘出来-->
+    <select id="findAllByUser" resultMap="userAccountMap">
+         select * from user u  left outer join account a on u.id=a.uid
+    </select>
+
+
+    <!--        配置user对象的封装user的内容 -->
+    <resultMap id="userAccountMap" type="cn.aogo.domain.User">
+        <id property="id" column="id"></id>
+        <result property="userName" column="userName"></result>
+        <result property="address" column="address"></result>
+        <result property="gender" column="gender"></result>
+        <result property="birthday" column="birthday"></result>
+
+        <!-- 配置user对象中accounts集合的映射 -->
+        <collection property="accounts" ofType="cn.aogo.domain.Account">
+            <id property="id" column="id"></id>
+            <result property="uid" column="uid"></result>
+            <result property="money" column="money"></result>
+        </collection>
+    </resultMap>
+
+
+</mapper>
+
